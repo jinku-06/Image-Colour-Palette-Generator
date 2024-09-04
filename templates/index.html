@@ -1,0 +1,126 @@
+{% extends 'base.html' %} {% block body %}
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        {% if file_name %}
+        <img
+          class="card-img-top p-3 rounded mx-auto d-block"
+          src="{{ url_for('static', filename='uploads/' + file_name) }}"
+          alt="Uploaded Image"
+          style="max-width: 100%; height: auto"
+        />
+        {% else %}
+        <img
+          class="card-img-top p-3 rounded mx-auto d-block"
+          src="https://via.placeholder.com/300?text=Uploaded+image+will+be+shown+here"
+          alt="Placeholder Image"
+          style="max-width: 100%; height: auto"
+        />
+        {% endif %}
+
+        <div class="card-body text-center">
+          <form
+            action="{{ url_for('home') }}"
+            method="POST"
+            enctype="multipart/form-data"
+            class="mb-3"
+          >
+            <div class="input-group mb-3">
+              <input
+                type="file"
+                name="file"
+                class="form-control"
+                id="customFile"
+                autocomplete="off"
+                required
+              />
+              <button type="submit" class="btn btn-primary">Upload</button>
+            </div>
+          </form>
+
+          {% if color_palette %}
+          <h5 class="mt-4">Color Palette</h5>
+          <div class="row row-cols-3 g-3">
+            {% for color in color_palette %}
+            <div class="col">
+              <div
+                class="color-swatch rounded-circle shadow-sm"
+                style="background-color: rgb{{ color }};"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="RGB: rgb{{ color }} | HEX: {{ '#%02x%02x%02x' | format(color[0], color[1], color[2]) }}"
+              >
+                <span class="visually-hidden">Color Swatch</span>
+              </div>
+              <div class="mt-2">
+                <span class="badge bg-light text-dark"
+                  >{{ '#%02x%02x%02x' | format(color[0], color[1], color[2])
+                  }}</span
+                >
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  onclick="copyToClipboard('{{ '#%02x%02x%02x' | format(color[0], color[1], color[2]) }}')"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <button class="btn btn-success mt-4" onclick="downloadPalette()">
+            Download Palette
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Function to copy color code to clipboard
+  function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(function () {
+          alert('Color ' + text + ' copied to clipboard!');
+      }, function () {
+          alert('Failed to copy text.');
+      });
+  }
+
+  // Function to download the palette as a text file
+  function downloadPalette() {
+      let palette = {{ color_palette | tojson }};
+      let text = palette.map(color => 'RGB: rgb' + color + ' | HEX: ' +
+          '#' + ('0' + color[0].toString(16)).slice(-2) +
+          ('0' + color[1].toString(16)).slice(-2) +
+          ('0' + color[2].toString(16)).slice(-2)).join('\n');
+      let blob = new Blob([text], { type: 'text/plain' });
+      let link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'color_palette.txt';
+      link.click();
+  }
+
+  // Initialize tooltips
+  document.addEventListener('DOMContentLoaded', function () {
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+      })
+  });
+</script>
+
+<style>
+  .color-swatch {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+</style>
+
+{% endblock body %}
