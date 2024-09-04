@@ -39,9 +39,10 @@ def home():
             return redirect(url_for("home", file_name=filename))
 
     file_name = request.args.get("file_name", "")
-    color_thief = ColorThief(file=f"static/uploads/{file_name}")
-    palette = color_thief.get_palette(color_count=6)
-    color_palette = [color for color in palette]
+    if file_name != "":
+        color_thief = ColorThief(file=f"static/uploads/{file_name}")
+        palette = color_thief.get_palette(color_count=6)
+    color_palette = [color for color in palette] if file_name else []
 
     return render_template(
         "index.html", file_name=file_name, color_palette=color_palette
